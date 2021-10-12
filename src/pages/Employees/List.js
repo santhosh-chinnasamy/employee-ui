@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Button } from "antd";
+import { Table, Modal, Button, Input } from "antd";
 import { employeeService } from "services";
 import { useHistory, Link } from "react-router-dom";
 import { initialPaginationValues } from "config";
@@ -53,6 +53,17 @@ export default function List() {
       title: "Deleted",
       dataIndex: "deleted",
       render: (text) => (text ? "yes" : "no"),
+      filters: [
+        {
+          text: "Yes",
+          value: true,
+        },
+        {
+          text: "No",
+          value: false,
+        },
+      ],
+      onFilter: (value, record) => record.deleted === value,
     },
     {
       title: "Actions",
@@ -91,6 +102,20 @@ export default function List() {
       },
     });
   };
+
+  const onKeywordSearch = (keyword) => {
+    if (keyword) {
+      history.push({
+        search: `?limit=${initialPaginationValues.pageSize}&page=${initialPaginationValues.page}&keyword=${keyword}`,
+      });
+    } else {
+      history.push({
+        search: `?limit=${initialPaginationValues.pageSize}&page=${initialPaginationValues.page}`,
+      });
+    }
+    fetchResult();
+  };
+
   return (
     <Base>
       <Table
@@ -110,6 +135,12 @@ export default function List() {
         title={() => {
           return (
             <span style={{ float: "right", marginBottom: "12px" }}>
+              <Input.Search
+                placeholder="Enter name or email"
+                onSearch={onKeywordSearch}
+                style={{ width: 200 }}
+              />
+              &nbsp;
               <Button type="primary">
                 <Link to="/add">Add</Link>
               </Button>
