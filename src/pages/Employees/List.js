@@ -9,6 +9,7 @@ const { confirm } = Modal;
 export default function List() {
   const [result, setResult] = useState({});
   const [loading, setLoading] = useState(false);
+  const [state, setState] = useState({ keyword: "" });
   const history = useHistory();
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function List() {
 
   const onPaginationChange = (page, pageSize) => {
     history.push({
-      search: `?limit=${pageSize}&page=${page}`,
+      search: `?limit=${pageSize}&page=${page}&keyword=${state.keyword}`,
     });
     fetchResult();
   };
@@ -44,10 +45,12 @@ export default function List() {
     {
       title: "Name",
       dataIndex: "name",
+      search: true,
     },
     {
       title: "Email",
       dataIndex: "email",
+      sorter: true,
     },
     {
       title: "Deleted",
@@ -104,6 +107,7 @@ export default function List() {
   };
 
   const onKeywordSearch = (keyword) => {
+    setState({ ...state, keyword });
     if (keyword) {
       history.push({
         search: `?limit=${initialPaginationValues.pageSize}&page=${initialPaginationValues.page}&keyword=${keyword}`,
@@ -113,6 +117,15 @@ export default function List() {
         search: `?limit=${initialPaginationValues.pageSize}&page=${initialPaginationValues.page}`,
       });
     }
+    fetchResult();
+  };
+
+  const handleTableChange = (pagination, filters, sorter) => {
+    const order = sorter?.order === "ascend" ? "asc" : "desc";
+    const sortBy = `${sorter?.field}:${order}`;
+    history.push({
+      search: `?limit=${pagination.pageSize}&page=${pagination.current}&sortBy=${sortBy}&keyword=${state.keyword}`,
+    });
     fetchResult();
   };
 
@@ -138,7 +151,9 @@ export default function List() {
               <Input.Search
                 placeholder="Enter name or email"
                 onSearch={onKeywordSearch}
+                defaultValue={state.keyword}
                 style={{ width: 200 }}
+                allowClear
               />
               &nbsp;
               <Button type="primary">
@@ -147,6 +162,7 @@ export default function List() {
             </span>
           );
         }}
+        onChange={handleTableChange}
       />
     </Base>
   );
